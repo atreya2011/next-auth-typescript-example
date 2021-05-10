@@ -6,6 +6,6 @@ const secret = process.env.SECRET!
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   console.log(secret)
-  const token = await jwt.getToken({ req, secret, raw: "yes" })
+  const token = await jwt.getToken({ req, secret, raw: true })
   res.send(JSON.stringify(token, null, 2))
 }

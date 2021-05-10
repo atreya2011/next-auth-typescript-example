@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from "next";
-import NextAuth, { InitOptions, User } from 'next-auth';
-import { JWTDecodeParams, JWTEncodeParams } from 'next-auth/jwt';
+import NextAuth, { NextAuthOptions, User } from 'next-auth';
 import Providers from 'next-auth/providers';
 
 interface UserInfo extends User {
@@ -11,13 +10,9 @@ interface UserInfo extends User {
 
 // For more information on each option (and a full list of options) go to
 // https://next-auth.js.org/configuration/options
-const options: InitOptions = {
+const options: NextAuthOptions = {
   // https://next-auth.js.org/configuration/providers
   providers: [
-    Providers.GitHub({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!
-    }),
     Providers.Google({
       clientId: process.env.GOOGLE_ID!,
       clientSecret: process.env.GOOGLE_SECRET!
@@ -56,7 +51,7 @@ const options: InitOptions = {
   // Notes:
   // * You must to install an appropriate node_module for your database
   // * The Email provider requires a database (OAuth providers do not)
-  database: process.env.DATABASE_URL,
+  // database: process.env.DATABASE_URL,
 
   // The secret should be set to a reasonably long random string.
   // It is used to sign cookies and to sign and encrypt JSON Web Tokens, unless
@@ -92,17 +87,20 @@ const options: InitOptions = {
     // if you want to override the default behaviour.
     // encode: async ({ secret, token, maxAge }) => {},
     // decode: async ({ secret, token, maxAge }) => {},
-    encode: async ({ secret, token }: JWTEncodeParams) => {
+    encode: async (jwtEncodeParams) => {
+      const token = jwtEncodeParams?.token
+      const secret = jwtEncodeParams?.secret as string
       let encodedToken = ""
       if (token) {
         encodedToken = jwt.sign(token, secret, { algorithm: 'HS512' })
       }
       return encodedToken
     },
-    decode: async ({ secret, token }: JWTDecodeParams) => {
+    decode: async (jwtDecodeParams) => {
+      const token = jwtDecodeParams?.token
+      const secret = jwtDecodeParams?.secret as string
       if (token) {
         const verify = jwt.verify(token, secret) as UserInfo
-  
         return verify
       }
       return {} as UserInfo
@@ -126,7 +124,7 @@ const options: InitOptions = {
   // https://next-auth.js.org/configuration/callbacks 
   callbacks: { 
     async signIn(user, profile) {
-      const isAllowedToSignIn = true
+      const isAllowedToSignIn = user.email === "atreya2011@gmail.com" ? true : false;
       console.log("signin", user)
       console.log("signin", profile)
       if (isAllowedToSignIn) {
